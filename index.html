@@ -622,33 +622,36 @@
         const groupId = streetMapping[street];
         const schedule = scheduleData[groupId];
         
+        // Helper for CRLF
+        const CRLF = '\r\n';
+
         // Header for iCal file
-        let icsContent = 
-`BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Gmina Zakroczym//Harmonogram Odpadow//PL
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:Odpady Zakroczym (${street})
-X-WR-TIMEZONE:Europe/Warsaw
-BEGIN:VTIMEZONE
-TZID:Europe/Warsaw
-BEGIN:STANDARD
-DTSTART:20241027T030000
-RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
-TZOFFSETFROM:+0200
-TZOFFSETTO:+0100
-TZNAME:CET
-END:STANDARD
-BEGIN:DAYLIGHT
-DTSTART:20250330T020000
-RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
-TZOFFSETFROM:+0100
-TZOFFSETTO:+0200
-TZNAME:CEST
-END:DAYLIGHT
-END:VTIMEZONE
-`;
+        let icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Gmina Zakroczym//Harmonogram Odpadow//PL',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            `X-WR-CALNAME:Odpady Zakroczym (${street})`,
+            'X-WR-TIMEZONE:Europe/Warsaw',
+            'BEGIN:VTIMEZONE',
+            'TZID:Europe/Warsaw',
+            'BEGIN:STANDARD',
+            'DTSTART:20241027T030000',
+            'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',
+            'TZOFFSETFROM:+0200',
+            'TZOFFSETTO:+0100',
+            'TZNAME:CET',
+            'END:STANDARD',
+            'BEGIN:DAYLIGHT',
+            'DTSTART:20250330T020000',
+            'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',
+            'TZOFFSETFROM:+0100',
+            'TZOFFSETTO:+0200',
+            'TZNAME:CEST',
+            'END:DAYLIGHT',
+            'END:VTIMEZONE'
+        ].join(CRLF) + CRLF;
 
         const typeLabels = {
             "zmieszane": "Odbiór Zmieszane",
@@ -662,35 +665,37 @@ END:VTIMEZONE
             dates.forEach(dateStr => {
                 const [day, month] = dateStr.split('.').map(Number);
                 // Create Date object for the event (6:00 AM)
-                const eventDate = new Date(currentYear, month - 1, day, 6, 0, 0);
                 
                 // Format date for iCal (YYYYMMDD)
                 const dateString = `${currentYear}${pad(month)}${pad(day)}`;
                 
                 // UID generation
                 const uid = `${dateString}-${type}@zakroczym.pl`;
+                const dtStamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
                 
                 // Alert Trigger: 1 day before at 18:00 (approx -PT12H from 6:00 AM event start)
                 
-                icsContent += 
-`BEGIN:VEVENT
-UID:${uid}
-DTSTAMP:${new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15)}Z
-DTSTART;TZID=Europe/Warsaw:${dateString}T060000
-DTEND;TZID=Europe/Warsaw:${dateString}T090000
-SUMMARY:♻️ ${typeLabels[type]}
-DESCRIPTION:Wystaw worki przed posesję do godziny 6:00 rano.
-BEGIN:VALARM
-TRIGGER:-PT12H
-DESCRIPTION:Przypomnienie o odpadach
-ACTION:DISPLAY
-END:VALARM
-END:VEVENT
-`;
+                const eventBlock = [
+                    'BEGIN:VEVENT',
+                    `UID:${uid}`,
+                    `DTSTAMP:${dtStamp}`,
+                    `DTSTART;TZID=Europe/Warsaw:${dateString}T060000`,
+                    `DTEND;TZID=Europe/Warsaw:${dateString}T090000`,
+                    `SUMMARY:♻️ ${typeLabels[type]}`,
+                    'DESCRIPTION:Wystaw worki przed posesję do godziny 6:00 rano.',
+                    'BEGIN:VALARM',
+                    'TRIGGER:-PT12H',
+                    'DESCRIPTION:Przypomnienie o odpadach',
+                    'ACTION:DISPLAY',
+                    'END:VALARM',
+                    'END:VEVENT'
+                ].join(CRLF);
+                
+                icsContent += eventBlock + CRLF;
             });
         }
 
-        icsContent += "END:VCALENDAR";
+        icsContent += 'END:VCALENDAR';
 
         // Create download link
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
