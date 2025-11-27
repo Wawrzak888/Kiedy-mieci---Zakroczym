@@ -389,7 +389,7 @@
         <div class="calendar-btn-container">
             <button class="btn-calendar" onclick="exportToCalendar()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M12 14v4"></path><path d="M10 16h4"></path></svg>
-                Dodaj do Kalendarza
+                Dodaj harmonogram do Kalendarza
             </button>
         </div>
 
@@ -664,27 +664,35 @@
         for (const [type, dates] of Object.entries(schedule)) {
             dates.forEach(dateStr => {
                 const [day, month] = dateStr.split('.').map(Number);
-                // Create Date object for the event (6:00 AM)
+                
+                // HACK: Create event for 18:00 on the PREVIOUS day to force evening notification
+                const collectionDate = new Date(currentYear, month - 1, day, 7, 0, 0); // Collection day 7:00
+                const reminderDate = new Date(collectionDate);
+                reminderDate.setDate(collectionDate.getDate() - 1); // Previous day
+                reminderDate.setHours(18, 0, 0); // 18:00
                 
                 // Format date for iCal (YYYYMMDD)
-                const dateString = `${currentYear}${pad(month)}${pad(day)}`;
+                const dateString = `${currentYear}${pad(reminderDate.getMonth() + 1)}${pad(reminderDate.getDate())}`;
+                const timeString = `180000`;
+                const endString = `181500`; // 15 mins event
                 
                 // UID generation
                 const uid = `${dateString}-${type}@zakroczym.pl`;
                 const dtStamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
                 
-                // Alert Trigger: 1 day before at 18:00 (approx -PT12H from 6:00 AM event start)
+                // TRIGGER: -PT0M (0 minutes before the event start).
+                // Since event starts at 18:00 previous day, notification will be at 18:00 previous day.
                 
                 const eventBlock = [
                     'BEGIN:VEVENT',
                     `UID:${uid}`,
                     `DTSTAMP:${dtStamp}`,
-                    `DTSTART;TZID=Europe/Warsaw:${dateString}T060000`,
-                    `DTEND;TZID=Europe/Warsaw:${dateString}T090000`,
-                    `SUMMARY:♻️ ${typeLabels[type]}`,
-                    'DESCRIPTION:Wystaw worki przed posesję do godziny 6:00 rano.',
+                    `DTSTART;TZID=Europe/Warsaw:${dateString}T${timeString}`,
+                    `DTEND;TZID=Europe/Warsaw:${dateString}T${endString}`,
+                    `SUMMARY:⚠️ Wystaw: ${typeLabels[type]}`,
+                    'DESCRIPTION:Jutro rano odbiór odpadów. Wystaw worki przed posesję.',
                     'BEGIN:VALARM',
-                    'TRIGGER:-PT12H',
+                    'TRIGGER:-PT0M',
                     'DESCRIPTION:Przypomnienie o odpadach',
                     'ACTION:DISPLAY',
                     'END:VALARM',
