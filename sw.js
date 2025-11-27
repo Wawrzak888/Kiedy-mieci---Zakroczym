@@ -1,5 +1,5 @@
-// ZMIANA WERSJI NA V3 (dla wymuszenia aktualizacji kalendarza)
-const CACHE_NAME = 'zakroczym-v3'; 
+// ZMIENIONO 'v1' na 'v2' -> TO WYMUSI AKTUALIZACJĘ NA TELEFONIE
+const CACHE_NAME = 'zakroczym-v2'; 
 
 const ASSETS_TO_CACHE = [
   './',
@@ -9,42 +9,37 @@ const ASSETS_TO_CACHE = [
   './icon-512.png'
 ];
 
-// Instalacja i cache'owanie plików
+// Instalacja i wymuszenie przejęcia kontroli (skipWaiting)
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  self.skipWaiting(); // Kluczowe: Nowy SW aktywuje się od razu
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Otwarto cache v3');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-// Strategia: Cache First (Najpierw pamięć, potem sieć)
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-      return fetch(event.request);
+      return response || fetch(event.request);
     })
   );
 });
 
-// Aktualizacja cache (czyszczenie starych wersji)
+// Czyszczenie starego cache (v1)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Usuwanie starego cache:', cacheName);
+            console.log('Usuwanie starej wersji:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim();
+  self.clients.claim(); // Przejmij otwarte karty natychmiast
 });
