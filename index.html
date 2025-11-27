@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gmina Zakroczym</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="background-color" content="#F5F7FA">
+    
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zakroczym">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --bg: #F5F7FA;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --white: #FFFFFF;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            
+            /* Waste Colors */
+            --mixed: #374151;
+            --plastic: #F4D03F;
+            --bio: #8D6E63;
+            --bulky: #E74C3C;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior-y: none;
+        }
+
+        /* --- SCREEN: ONBOARDING --- */
+        #onboarding-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 24px;
+            background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .logo-area {
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .logo-sub {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .input-group {
+            width: 100%;
+            max-width: 320px;
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out 0.2s backwards;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            background-color: #F9FAFB;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* --- SCREEN: DASHBOARD --- */
+        #dashboard-screen {
+            display: none;
+            padding-bottom: 80px; /* Extra space for install banner */
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: max(16px, env(safe-area-inset-top)); /* Notch support */
+        }
+
+        .header-content h1 {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .street-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .btn-icon {
+            background: #F3F4F6;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        /* Month Navigation */
+        .month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 10px 20px;
+        }
+
+        .month-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .nav-arrow {
+            background: white;
+            border: 1px solid #E5E7EB;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Cards List */
+        .cards-container {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .waste-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            animation: fadeSlideUp 0.4s ease-out;
+            transition: transform 0.2s;
+        }
+
+        .waste-card:active {
+            transform: scale(0.99);
+        }
+
+        .card-strip {
+            width: 6px;
+            flex-shrink: 0;
+        }
+
+        .card-content {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .text-box {
+            flex: 1;
+        }
+
+        .waste-date {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .waste-type {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+
+        .badge-today { background: #DC2626; color: white; }
+        .badge-tomorrow { background: #F59E0B; color: white; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        /* Install Banner */
+        #install-banner {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 24px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 1000;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideUp 0.5s ease-out;
+            border: 1px solid #E5E7EB;
+        }
+
+        .install-text {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .install-btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Helper for SVG colors */
+        .text-mixed { color: var(--mixed); }
+        .bg-mixed-light { background: #F3F4F6; }
+        .text-plastic { color: #D4AC0D; }
+        .bg-plastic-light { background: #FCF3CF; }
+        .text-bio { color: var(--bio); }
+        .bg-bio-light { background: #EFEBE9; }
+        .text-bulky { color: var(--bulky); }
+        .bg-bulky-light { background: #FADBD8; }
+
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: ONBOARDING -->
+    <div id="onboarding-screen">
+        <div class="logo-area">
+            <div style="font-size: 48px; margin-bottom: 10px;">♻️</div>
+            <div class="logo-title">Gmina Zakroczym</div>
+            <div class="logo-sub">Harmonogram Odpadów 2025</div>
+        </div>
+        
+        <div class="input-group">
+            <label style="display:block; text-align:left; margin-bottom:8px; font-weight:600; color:#374151; font-size:14px;">Wybierz swoją ulicę / miejscowość:</label>
+            <select id="street-select">
+                <option value="" disabled selected>-- Wybierz z listy --</option>
+            </select>
+            <button class="btn-primary" onclick="saveStreet()">Zapisz i Przejdź</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: DASHBOARD -->
+    <div id="dashboard-screen">
+        <div class="sticky-header">
+            <div class="header-content">
+                <h1>Harmonogram dla:</h1>
+                <div class="street-name" id="display-street">...</div>
+            </div>
+            <button class="btn-icon" onclick="resetApp()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+        </div>
+
+        <div class="month-nav">
+            <button class="nav-arrow" onclick="changeMonth(-1)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="month-title" id="month-display">Styczeń 2025</div>
+            <button class="nav-arrow" onclick="changeMonth(1)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+        </div>
+
+        <div class="cards-container" id="schedule-list">
+            <!-- Karty generowane przez JS -->
+        </div>
+    </div>
+
+    <!-- CUSTOM PWA INSTALL BANNER -->
+    <div id="install-banner">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:24px;">📲</div>
+            <div class="install-text">Zainstaluj aplikację<br><span style="font-size:12px; font-weight:400; color:#6B7280;">Dostęp offline i wygoda</span></div>
+        </div>
+        <button id="install-btn" class="install-btn-action">Instaluj</button>
+    </div>
+
+<script>
+    // --- PWA LOGIC (SERVICE WORKER & INSTALL) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker zarejestrowany', reg))
+                .catch(err => console.log('Błąd Service Workera', err));
+        });
+    }
+
+    let deferredPrompt;
+    const installBanner = document.getElementById('install-banner');
+    const installBtn = document.getElementById('install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent default browser install banner
+        e.preventDefault();
+        deferredPrompt = e;
+        // Show custom banner
+        installBanner.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            deferredPrompt = null;
+            installBanner.style.display = 'none';
+        }
+    });
+
+    // --- APPLICATION LOGIC (DATA v11.0) ---
+    
+    const scheduleData = {
+        "group1": { // MIASTO - REJON 1
+            "zmieszane": ["10.02", "24.02", "10.03", "24.03", "07.04", "22.04", "05.05", "19.05", "02.06", "16.06", "30.06", "14.07", "28.07", "11.08", "25.08", "08.09", "22.09", "06.10", "20.10", "03.11", "17.11", "01.12", "15.12", "29.12"],
+            "zolty": ["17.02", "17.03", "14.04", "12.05", "09.06", "07.07", "04.08", "01.09", "29.09", "27.10", "24.11", "22.12"],
+            "bio": ["10.02", "10.03", "07.04", "22.04", "05.05", "19.05", "02.06", "16.06", "30.06", "14.07", "28.07", "11.08", "25.08", "08.09", "22.09", "06.10", "20.10", "03.11", "01.12"],
+            "gabaryty": ["17.03", "10.11"]
+        },
+        "group2": { // MIASTO - REJON 2
+            "zmieszane": ["11.02", "25.02", "11.03", "25.03", "08.04", "22.04", "06.05", "20.05", "03.06", "17.06", "01.07", "15.07", "29.07", "12.08", "26.08", "09.09", "23.09", "07.10", "21.10", "04.11", "18.11", "02.12", "16.12", "30.12"],
+            "zolty": ["18.02", "18.03", "15.04", "13.05", "10.06", "08.07", "05.08", "02.09", "30.09", "28.10", "25.11", "23.12"],
+            "bio": ["11.02", "11.03", "08.04", "22.04", "06.05", "20.05", "03.06", "17.06", "01.07", "15.07", "29.07", "12.08", "26.08", "09.09", "23.09", "07.10", "21.10", "04.11", "02.12"],
+            "gabaryty": ["18.03", "12.11"]
+        },
+        "group3": { // WSIE - REJON 1
+            "zmieszane": ["02.01", "16.01", "30.01", "13.02", "27.02", "13.03", "27.03", "10.04", "24.04", "08.05", "22.05", "05.06", "19.06", "03.07", "17.07", "31.07", "14.08", "28.08", "11.09", "25.09", "08.10", "22.10", "05.11", "19.11", "03.12", "17.12", "31.12"],
+            "zolty": ["09.01", "06.02", "06.03", "03.04", "01.05", "29.05", "26.06", "24.07", "21.08", "18.09", "16.10", "13.11", "11.12"],
+            "bio": ["12.03", "26.03", "09.04", "23.04", "07.05", "21.05", "04.06", "18.06", "02.07", "16.07", "30.07", "13.08", "27.08", "10.09", "24.09", "08.10", "22.10", "05.11", "03.12"],
+            "gabaryty": ["19.03", "13.11"]
+        },
+        "group4": { // WSIE - REJON 2
+            "zmieszane": ["03.01", "17.01", "31.01", "14.02", "28.02", "14.03", "28.03", "11.04", "25.04", "09.05", "23.05", "06.06", "20.06", "04.07", "18.07", "01.08", "16.08", "29.08", "12.09", "26.09", "09.10", "23.10", "06.11", "20.11", "04.12", "18.12"],
+            "zolty": ["10.01", "07.02", "07.03", "04.04", "02.05", "30.05", "27.06", "25.07", "22.08", "19.09", "17.10", "14.11", "12.12"],
+            "bio": ["13.03", "27.03", "10.04", "24.04", "08.05", "22.05", "05.06", "19.06", "03.07", "17.07", "31.07", "14.08", "28.08", "11.09", "25.09", "09.10", "23.10", "06.11", "04.12"],
+            "gabaryty": ["20.03", "14.11"]
+        },
+        "group5": { // WSIE - REJON 3
+            "zmieszane": ["14.02", "28.02", "14.03", "28.03", "11.04", "26.04", "09.05", "23.05", "06.06", "21.06", "04.07", "18.07", "01.08", "16.08", "29.08", "12.09", "26.09", "10.10", "24.10", "07.11", "21.11", "05.12", "19.12"],
+            "zolty": ["21.02", "21.03", "18.04", "16.05", "13.06", "11.07", "08.08", "05.09", "03.10", "31.10", "28.11", "12.12"],
+            "bio": ["14.02", "14.03", "11.04", "26.04", "09.05", "23.05", "06.06", "21.06", "04.07", "18.07", "01.08", "16.08", "29.08", "12.09", "26.09", "10.10", "24.10", "07.11", "05.12"],
+            "gabaryty": ["21.03", "15.11"]
+        }
+    };
+
+    const streetMapping = {
+        "Akacjowa": "group1", "Cicha": "group1", "Gałachy": "group1", "Gwiaździsta": "group1", "Forteczna": "group1", "Gałachy Prochownia": "group1", "gen. Ludwika Czyżewskiego": "group1", "Gdańska": "group1", "Kościelna": "group1", "Modlińska": "group1", "Parowa Klasztorna": "group1", "Parowa Okólna": "group1", "Parowa Płocka": "group1", "Parowa Warszawska": "group1", "Platanowa": "group1", "Płońska": "group1", "Polna": "group1", "Przechodnia": "group1", "por. Józefa Rytla": "group1", "Rybacka": "group1", "Rynek": "group1", "Sarenki": "group1", "Słoneczna": "group1", "Starostwo": "group1", "Szkolna": "group1", "Topólki": "group1", "Tylna": "group1", "Utrata": "group1", "Warszawska": "group1", "Widokowa": "group1", "Wójtostwo": "group1",
+        "Aleja Spółdzielni": "group2", "Byłych Więźniów Tw. Zakroczym": "group2", "Jana Chilickiego": "group2", "kpt. Tadeusza Doranta": "group2", "Klasztorna": "group2", "O. Honorata Koźmińskiego": "group2", "Mokradle": "group2", "Logistyczna": "group2", "Ostrzykowizna": "group2", "Pieczoługi": "group2", "Spacerowa": "group2", "Stalowa": "group2", "Wyszogrodzka": "group2",
+        "Jaworowo-Trębki Stare": "group3", "Mochty-Smok": "group3", "Smoszewo": "group3", "Trębki Stare": "group3", "Wólka Smoszewska": "group3", "Zakroczym ul. Uroczysko": "group3",
+        "Błogosławie": "group4", "Czarna": "group4", "Janowo": "group4", "Smoły": "group4", "Strubiny": "group4", "Swobodnia": "group4", "Śniadowo": "group4", "Wojszczyce": "group4", "Zakroczym ul. Duchowizna": "group4", "Zaręby": "group4",
+        "Emolinek": "group5", "Henrysin": "group5", "Trębki Nowe": "group5", "Wygoda Smoszewska": "group5"
+    };
+
+    let currentYear = 2025;
+    let currentMonth = new Date().getMonth();
+    if (new Date().getFullYear() < 2025) {
+        currentMonth = 0;
+    }
+
+    const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+
+    function init() {
+        populateStreetSelect();
+        const savedStreet = localStorage.getItem('selectedStreet');
+        if (savedStreet && streetMapping[savedStreet]) {
+            showDashboard(savedStreet);
+        } else {
+            showOnboarding();
+        }
+    }
+
+    function populateStreetSelect() {
+        const select = document.getElementById('street-select');
+        const streets = Object.keys(streetMapping).sort((a, b) => a.localeCompare(b));
+        streets.forEach(street => {
+            const option = document.createElement('option');
+            option.value = street;
+            option.textContent = street;
+            select.appendChild(option);
+        });
+    }
+
+    function saveStreet() {
+        const select = document.getElementById('street-select');
+        const street = select.value;
+        if (street) {
+            localStorage.setItem('selectedStreet', street);
+            showDashboard(street);
+        } else {
+            alert("Proszę wybrać ulicę z listy.");
+        }
+    }
+
+    function resetApp() {
+        localStorage.removeItem('selectedStreet');
+        document.getElementById('dashboard-screen').style.display = 'none';
+        document.getElementById('onboarding-screen').style.display = 'flex';
+        document.getElementById('street-select').value = "";
+    }
+
+    function showOnboarding() {
+        document.getElementById('onboarding-screen').style.display = 'flex';
+        document.getElementById('dashboard-screen').style.display = 'none';
+    }
+
+    function showDashboard(street) {
+        document.getElementById('onboarding-screen').style.display = 'none';
+        document.getElementById('dashboard-screen').style.display = 'block';
+        document.getElementById('display-street').textContent = street;
+        renderCalendar();
+    }
+
+    function changeMonth(delta) {
+        currentMonth += delta;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+        } else if (currentMonth > 11) {
+            currentMonth = 0;
+        }
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const street = localStorage.getItem('selectedStreet');
+        if (!street) return;
+        const groupId = streetMapping[street];
+        const schedule = scheduleData[groupId];
+        const monthContainer = document.getElementById('schedule-list');
+        const monthLabel = document.getElementById('month-display');
+        monthLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        monthContainer.innerHTML = "";
+
+        let events = [];
+        const typeConfig = {
+            "zmieszane": { color: "var(--mixed)", light: "var(--bg-mixed-light)", label: "Zmieszane", icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>` },
+            "zolty": { color: "var(--plastic)", light: "var(--bg-plastic-light)", label: "Segregowane", icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M10 5V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2"/></svg>` },
+            "bio": { color: "var(--bio)", light: "var(--bg-bio-light)", label: "Bio (Brązowy)", icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22s5.5-3.5 10-11c0 0-5.5-4.5-9.5-2.5C.5 9 2 22 2 22z"/><path d="M22 22s-5.5-3.5-10-11c0 0 5.5-4.5 9.5-2.5C23.5 9 22 22 22 22z"/></svg>` },
+            "gabaryty": { color: "var(--bulky)", light: "var(--bg-bulky-light)", label: "Gabaryty", icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8H4z"/><path d="M4 19V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/><path d="M2 19h20"/></svg>` }
+        };
+
+        for (const [type, dates] of Object.entries(schedule)) {
+            dates.forEach(dateStr => {
+                const [day, month] = dateStr.split('.').map(Number);
+                if (month - 1 === currentMonth) {
+                    const dateObj = new Date(currentYear, month - 1, day);
+                    events.push({
+                        date: dateObj,
+                        type: type,
+                        day: day,
+                        dayOfWeek: getDayName(dateObj)
+                    });
+                }
+            });
+        }
+
+        events.sort((a, b) => a.date - b.date);
+
+        if (events.length === 0) {
+            monthContainer.innerHTML = `<div class="empty-state">Brak odbiorów w tym miesiącu.</div>`;
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        events.forEach(event => {
+            const config = typeConfig[event.type];
+            let badge = "";
+            if (event.date.getFullYear() === today.getFullYear() && event.date.getMonth() === today.getMonth() && event.date.getDate() === today.getDate()) {
+                badge = `<span class="badge badge-today">DZIŚ</span>`;
+            } else if (event.date.getFullYear() === tomorrow.getFullYear() && event.date.getMonth() === tomorrow.getMonth() && event.date.getDate() === tomorrow.getDate()) {
+                badge = `<span class="badge badge-tomorrow">JUTRO</span>`;
+            }
+
+            const cardHtml = `
+            <div class="waste-card">
+                <div class="card-strip" style="background-color: ${config.color}"></div>
+                <div class="card-content">
+                    <div class="icon-box" style="background-color: ${config.light}; color: ${config.color}">
+                        ${config.icon}
+                    </div>
+                    <div class="text-box">
+                        <div class="waste-date">${event.dayOfWeek}, ${pad(event.day)}.${pad(currentMonth + 1)}</div>
+                        <div class="waste-type">${config.label}</div>
+                    </div>
+                    ${badge}
+                </div>
+            </div>`;
+            monthContainer.innerHTML += cardHtml;
+        });
+    }
+
+    function getDayName(date) {
+        const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+        return days[date.getDay()];
+    }
+
+    function pad(n) {
+        return n < 10 ? '0' + n : n;
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
