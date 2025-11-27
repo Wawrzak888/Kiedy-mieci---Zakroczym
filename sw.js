@@ -1,5 +1,5 @@
-// ZMIANA WERSJI NA V2 WYMUSI POBRANIE NOWEGO INDEX.HTML
-const CACHE_NAME = 'zakroczym-v2'; 
+// ZMIANA WERSJI NA V3 (dla wymuszenia aktualizacji kalendarza)
+const CACHE_NAME = 'zakroczym-v3'; 
 
 const ASSETS_TO_CACHE = [
   './',
@@ -11,10 +11,10 @@ const ASSETS_TO_CACHE = [
 
 // Instalacja i cache'owanie plików
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // NOWOŚĆ: Zmusza nowy serwis worker do natychmiastowego przejęcia kontroli
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Otwarto cache v2');
+      console.log('Otwarto cache v3');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Aktualizacja cache (czyszczenie starych wersji v1)
+// Aktualizacja cache (czyszczenie starych wersji)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -40,11 +40,11 @@ self.addEventListener('activate', (event) => {
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
             console.log('Usuwanie starego cache:', cacheName);
-            return caches.delete(cacheName); // Usuwa v1
+            return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim(); // Przejmij kontrolę nad wszystkimi otwartymi kartami
+  self.clients.claim();
 });
